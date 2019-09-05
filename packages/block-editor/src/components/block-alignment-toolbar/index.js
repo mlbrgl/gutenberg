@@ -52,6 +52,7 @@ export function BlockAlignmentToolbar( { value, onChange, controls = DEFAULT_CON
 
 	return (
 		<Toolbar
+			className="block-editor-block-alignment-toolbar"
 			isCollapsed={ isCollapsed }
 			icon={ activeAlignmentControl ? activeAlignmentControl.icon : defaultAlignmentControl.icon }
 			label={ __( 'Change alignment' ) }
