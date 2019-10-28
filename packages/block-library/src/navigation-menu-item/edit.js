@@ -29,55 +29,67 @@ import {
 	BlockControls,
 	InnerBlocks,
 	InspectorControls,
-	URLPopover,
+	__experimentalLinkControl as LinkControl,
 } from '@wordpress/block-editor';
-import {
-	Fragment,
-	useRef,
-	useState,
-} from '@wordpress/element';
+import { Fragment, useState, useRef } from '@wordpress/element';
 
 function NavigationMenuItemEdit( {
-	attributes,
-	isSelected,
-	isParentOfSelectedBlock,
-	setAttributes,
-} ) {
-	const plainTextRef = useRef( null );
+     attributes,
+     isSelected,
+     isParentOfSelectedBlock,
+     setAttributes,
+     fetchSearchSuggestions,
+ } ) {
+	const { label, link } = attributes;
+	const initialLinkSetting = { 'new-tab': link.newTab };
 	const [ isLinkOpen, setIsLinkOpen ] = useState( false );
-	const [ isEditingLink, setIsEditingLink ] = useState( false );
-	const [ urlInput, setUrlInput ] = useState( null );
 
-	const inputValue = urlInput !== null ? urlInput : url;
+	const plainTextRef = useRef( null );
 
-	const onKeyDown = ( event ) => {
-		if ( [ LEFT, DOWN, RIGHT, UP, BACKSPACE, ENTER ].indexOf( event.keyCode ) > -1 ) {
+	/**
+	 * `onKeyDown` LinkControl handler.
+	 * It takes over to stop the event propagation to make the
+	 * navigation work, avoiding undesired behaviors.
+	 * For instance, it will block to move between menu items
+	 * when the LinkOver is focused.
+	 *
+	 * @param event
+	 */
+	const handleLinkControlOnKeyDown = ( event ) => {
+		const { keyCode } = event;
+
+		if ( [ LEFT, DOWN, RIGHT, UP, BACKSPACE, ENTER ].indexOf( keyCode ) > -1 ) {
 			// Stop the key event from propagating up to ObserveTyping.startTypingInTextField.
 			event.stopPropagation();
 		}
 	};
 
-	const closeURLPopover = () => {
-		setIsEditingLink( false );
-		setUrlInput( null );
-		setIsLinkOpen( false );
-	};
-
-	const autocompleteRef = useRef( null );
-
-	const onFocusOutside = ( event ) => {
-		const autocompleteElement = autocompleteRef.current;
-		if ( autocompleteElement && autocompleteElement.contains( event.target ) ) {
+	/**
+	 * Updates the link attribute when it changes
+	 * through of the `onLinkChange` LinkControl callback.
+	 *
+	 * @param {Object|null} link The object link if it has been selected, or null.
+	 */
+	const updateLink = ( link ) => {
+		if ( ! link ) {
 			return;
 		}
-		closeURLPopover();
+		setAttributes( { link } )
 	};
 
-	const stopPropagation = ( event ) => {
-		event.stopPropagation();
+
+	/**
+	 * It updates the link attribute when the
+	 * link settings changes.
+	 *
+	 * @param {String} setting Setting type, for instance, `new-tab`.
+	 * @param {String} value Setting type value.
+	 */
+	const updateLinkSetting = ( setting, value ) => {
+		const newTab = 'new-tab' === setting ? value : link.newTab;
+		setAttributes( { link: { ...link, newTab } } );
 	};
 
-	const { label, url } = attributes;
 	let content;
 	if ( isSelected ) {
 		content = (
@@ -107,31 +119,17 @@ function NavigationMenuItemEdit( {
 						onClick={ () => setIsLinkOpen( ! isLinkOpen ) }
 					/>
 					{ isLinkOpen &&
-					<>
-						<URLPopover
-							className="wp-block-navigation-menu-item__inline-link-input"
-							onClose={ closeURLPopover }
-							onFocusOutside={ onFocusOutside }
-						>
-							{ ( ! url || isEditingLink ) &&
-							<URLPopover.LinkEditor
-								value={ inputValue }
-								onChangeInputValue={ setUrlInput }
-								onKeyPress={ stopPropagation }
-								onKeyDown={ onKeyDown }
-								onSubmit={ ( event ) => event.preventDefault() }
-								autocompleteRef={ autocompleteRef }
-							/>
-							}
-							{ ( url && ! isEditingLink ) &&
-								<URLPopover.LinkViewer
-									onKeyPress={ stopPropagation }
-									url={ url }
-								/>
-							}
-
-						</URLPopover>
-					</>
+					<LinkControl
+						className="wp-block-navigation-menu-item__inline-link-input"
+						onKeyDown={ handleLinkControlOnKeyDown }
+						onKeyPress={ ( event ) => event.stopPropagation() }
+						onClose={ ( link ) => setAttributes( { link } ) }
+						currentLink={ link }
+						onLinkChange={ updateLink }
+						currentSettings={ initialLinkSetting }
+						onSettingsChange={ updateLinkSetting }
+						fetchSearchSuggestions={ fetchSearchSuggestions }
+					/>
 					}
 				</Toolbar>
 			</BlockControls>
@@ -203,10 +201,11 @@ function NavigationMenuItemEdit( {
 }
 
 export default withSelect( ( select, ownProps ) => {
-	const { hasSelectedInnerBlock } = select( 'core/block-editor' );
+	const { hasSelectedInnerBlock, getSettings } = select( 'core/block-editor' );
 	const { clientId } = ownProps;
 
 	return {
 		isParentOfSelectedBlock: hasSelectedInnerBlock( clientId, true ),
+		fetchSearchSuggestions: getSettings().__experimentalFetchLinkSuggestions,
 	};
 } )( NavigationMenuItemEdit );
