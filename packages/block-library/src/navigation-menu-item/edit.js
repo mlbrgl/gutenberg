@@ -41,7 +41,7 @@ function NavigationMenuItemEdit( {
      fetchSearchSuggestions,
  } ) {
 	const { label, link } = attributes;
-	const initialLinkSetting = { 'new-tab': link.newTab };
+	const linkSettings = { 'new-tab': link.newTab };
 	const [ isLinkOpen, setIsLinkOpen ] = useState( false );
 
 	const plainTextRef = useRef( null );
@@ -119,17 +119,16 @@ function NavigationMenuItemEdit( {
 						onClick={ () => setIsLinkOpen( ! isLinkOpen ) }
 					/>
 					{ isLinkOpen &&
-					<LinkControl
-						className="wp-block-navigation-menu-item__inline-link-input"
-						onKeyDown={ handleLinkControlOnKeyDown }
-						onKeyPress={ ( event ) => event.stopPropagation() }
-						onClose={ ( link ) => setAttributes( { link } ) }
-						currentLink={ link }
-						onLinkChange={ updateLink }
-						currentSettings={ initialLinkSetting }
-						onSettingsChange={ updateLinkSetting }
-						fetchSearchSuggestions={ fetchSearchSuggestions }
-					/>
+						<LinkControl
+							className="wp-block-navigation-menu-item__inline-link-input"
+							onKeyDown={ handleLinkControlOnKeyDown }
+							onKeyPress={ ( event ) => event.stopPropagation() }
+							currentLink={ link }
+							onLinkChange={ updateLink }
+							currentSettings={ linkSettings }
+							onSettingsChange={ updateLinkSetting }
+							fetchSearchSuggestions={ fetchSearchSuggestions }
+						/>
 					}
 				</Toolbar>
 			</BlockControls>
