@@ -34,14 +34,14 @@ import {
 import { Fragment, useState, useRef } from '@wordpress/element';
 
 function NavigationMenuItemEdit( {
-     attributes,
-     isSelected,
-     isParentOfSelectedBlock,
-     setAttributes,
-     fetchSearchSuggestions,
- } ) {
-	const { label, link } = attributes;
-	const linkSettings = { 'new-tab': link.newTab };
+	attributes,
+	isSelected,
+	isParentOfSelectedBlock,
+	setAttributes,
+	fetchSearchSuggestions,
+} ) {
+	const { label, opensInNewTab, title, url } = attributes;
+	const link = { title, url };
 	const [ isLinkOpen, setIsLinkOpen ] = useState( false );
 
 	const plainTextRef = useRef( null );
@@ -74,7 +74,9 @@ function NavigationMenuItemEdit( {
 		if ( ! link ) {
 			return;
 		}
-		setAttributes( { link } )
+
+		const { title, url } = link;
+		setAttributes( { title, url } )
 	};
 
 
@@ -86,8 +88,9 @@ function NavigationMenuItemEdit( {
 	 * @param {String} value Setting type value.
 	 */
 	const updateLinkSetting = ( setting, value ) => {
-		const newTab = 'new-tab' === setting ? value : link.newTab;
-		setAttributes( { link: { ...link, newTab } } );
+		if ( 'new-tab' ) {
+			setAttributes( { opensInNewTab: value } );
+		}
 	};
 
 	let content;
@@ -110,7 +113,7 @@ function NavigationMenuItemEdit( {
 						currentLink={ link }
 						onLinkChange={ updateLink }
 						onClose={ () => setIsLinkOpen( false ) }
-						currentSettings={ linkSettings }
+						currentSettings={ { 'new-tab': opensInNewTab } }
 						onSettingsChange={ updateLinkSetting }
 						fetchSearchSuggestions={ fetchSearchSuggestions }
 					/>
