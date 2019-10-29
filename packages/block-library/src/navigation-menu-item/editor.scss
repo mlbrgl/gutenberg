@@ -56,7 +56,6 @@
 		font-size: $text-editor-font-size;
 		background-color: var(--background-color-menu-link);
 		color: var(--color-menu-link);
-		width: inherit;
 	}
 
 	&.is-editing .components-text-control__input {
