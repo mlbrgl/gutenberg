@@ -20,7 +20,7 @@ import { ColorPaletteControl, ContrastChecker } from '@wordpress/block-editor';
 const ColorSelectorIcon = ( { style } ) =>
 	<div className="block-library-colors-selector__icon-container">
 		<div
-			className="block-library-colors-selector__state-selection wp-block-navigation-menu-item"
+			className="block-library-colors-selector__state-selection"
 			style={ style }
 		>
 			Aa
