@@ -31,7 +31,7 @@ import {
 	InspectorControls,
 	__experimentalLinkControl as LinkControl,
 } from '@wordpress/block-editor';
-import { Fragment, useState, useRef } from '@wordpress/element';
+import { Fragment, useState, useRef, useEffect } from '@wordpress/element';
 
 function NavigationMenuItemEdit( {
 	attributes,
@@ -43,8 +43,25 @@ function NavigationMenuItemEdit( {
 	const { label, opensInNewTab, title, url } = attributes;
 	const link = { title, url };
 	const [ isLinkOpen, setIsLinkOpen ] = useState( false );
+	const [ wasCloseByLinkControl, setWasCloseByLinkControl ] = useState( false );
 
 	const plainTextRef = useRef( null );
+
+	/**
+	 * It's a kind of hack to handle closing the LinkControl popover
+	 * clicking on the ToolbarButton link.
+
+	 */
+	useEffect( () => {
+	    if ( ! isSelected ) {
+			setIsLinkOpen( false );
+			setWasCloseByLinkControl( false );
+	    }
+	    return () => {
+			setIsLinkOpen( false );
+			setWasCloseByLinkControl( false );
+	    }
+	}, [ isSelected ] );
 
 	/**
 	 * `onKeyDown` LinkControl handler.
@@ -79,7 +96,6 @@ function NavigationMenuItemEdit( {
 		setAttributes( { title, url } )
 	};
 
-
 	/**
 	 * It updates the link attribute when the
 	 * link settings changes.
@@ -112,7 +128,10 @@ function NavigationMenuItemEdit( {
 						onKeyPress={ ( event ) => event.stopPropagation() }
 						currentLink={ link }
 						onLinkChange={ updateLink }
-						onClose={ () => setIsLinkOpen( false ) }
+						onClose={ () => {
+							setWasCloseByLinkControl( true );
+							setIsLinkOpen( false );
+						} }
 						currentSettings={ { 'new-tab': opensInNewTab } }
 						onSettingsChange={ updateLinkSetting }
 						fetchSearchSuggestions={ fetchSearchSuggestions }
@@ -136,7 +155,15 @@ function NavigationMenuItemEdit( {
 						name="link"
 						icon="admin-links"
 						title={ __( 'Link' ) }
-						onClick={ () => setIsLinkOpen( ! isLinkOpen ) }
+						onClick={ () => {
+							// If the popover was closed by click outside,
+							// then there is not nothing to do here.
+							if ( wasCloseByLinkControl ) {
+								setWasCloseByLinkControl( false );
+								return;
+							}
+							setIsLinkOpen( ! isLinkOpen );
+						} }
 					/>
 				</Toolbar>
 			</BlockControls>
