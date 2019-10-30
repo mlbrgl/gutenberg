@@ -50,17 +50,16 @@ function NavigationMenuItemEdit( {
 	/**
 	 * It's a kind of hack to handle closing the LinkControl popover
 	 * clicking on the ToolbarButton link.
-
 	 */
 	useEffect( () => {
-	    if ( ! isSelected ) {
+		if ( ! isSelected ) {
 			setIsLinkOpen( false );
 			setWasCloseByLinkControl( false );
-	    }
-	    return () => {
+		}
+		return () => {
 			setIsLinkOpen( false );
 			setWasCloseByLinkControl( false );
-	    }
+		};
 	}, [ isSelected ] );
 
 	/**
@@ -70,7 +69,7 @@ function NavigationMenuItemEdit( {
 	 * For instance, it will block to move between menu items
 	 * when the LinkOver is focused.
 	 *
-	 * @param event
+	 * @param {Event} event
 	 */
 	const handleLinkControlOnKeyDown = ( event ) => {
 		const { keyCode } = event;
@@ -85,23 +84,22 @@ function NavigationMenuItemEdit( {
 	 * Updates the link attribute when it changes
 	 * through of the `onLinkChange` LinkControl callback.
 	 *
-	 * @param {Object|null} link The object link if it has been selected, or null.
+	 * @param {Object|null} itemLink Link object if it has been selected. Otherwise, Null.
 	 */
-	const updateLink = ( link ) => {
-		if ( ! link ) {
+	const updateLink = ( itemLink ) => {
+		if ( ! itemLink ) {
 			return;
 		}
 
-		const { title, url } = link;
-		setAttributes( { title, url } )
+		setAttributes( { title: itemLink.title, url: itemLink.url } );
 	};
 
 	/**
 	 * It updates the link attribute when the
 	 * link settings changes.
 	 *
-	 * @param {String} setting Setting type, for instance, `new-tab`.
-	 * @param {String} value Setting type value.
+	 * @param {string} setting Setting type, for instance, `new-tab`.
+	 * @param {string} value Setting type value.
 	 */
 	const updateLinkSetting = ( setting, value ) => {
 		if ( 'new-tab' ) {
@@ -139,12 +137,15 @@ function NavigationMenuItemEdit( {
 				}
 			</div>
 		);
-
 	} else {
-		content = <div className="wp-block-navigation-menu-item__container">
-			{ ( link && link.url ) && <ExternalLink href={ link.url }>{ label }</ExternalLink> }
-			{ ( ! link || ! link.url ) && label }
-		</div>;
+		content = (
+			<div className="wp-block-navigation-menu-item__container">
+				{ ( link && link.url ) && (
+					<ExternalLink href={ link.url }>{ label }</ExternalLink>
+				) }
+				{ ( ! link || ! link.url ) && label }
+			</div>
+		);
 	}
 
 	return (
@@ -173,8 +174,8 @@ function NavigationMenuItemEdit( {
 				>
 					<ToggleControl
 						checked={ attributes.opensInNewTab }
-						onChange={ ( opensInNewTab ) => {
-							setAttributes( { opensInNewTab } );
+						onChange={ ( newTab ) => {
+							setAttributes( { opensInNewTab: newTab } );
 						} }
 						label={ __( 'Open in new tab' ) }
 					/>
@@ -191,8 +192,8 @@ function NavigationMenuItemEdit( {
 				>
 					<TextControl
 						value={ attributes.title || '' }
-						onChange={ ( title ) => {
-							setAttributes( { title } );
+						onChange={ ( itemTitle ) => {
+							setAttributes( { title: itemTitle } );
 						} }
 						label={ __( 'Title Attribute' ) }
 						help={ __( 'Provide more context about where the link goes.' ) }
